@@ -1,0 +1,17 @@
+
+SELECT COUNT (distinct user_id) AS 'Count of Users', question
+FROM survey
+GROUP by question;
+
+WITH funnels AS
+(SELECT DISTINCT q.user_id, hto.user_id IS NOT NULL as 'is_home_try_on', hto.number_of_pairs, p.user_id IS NOT NULL as 'is_purchase'
+FROM quiz as 'q'
+LEFT JOIN home_try_on AS 'hto'
+ON hto.user_id=q.user_id
+LEFT JOIN purchase as 'p'
+on p.user_id= hto.user_id)
+
+SELECT COUNT (DISTINCT CASE WHEN number_of_pairs = '3 pairs' THEN user_id END) AS '3 pairs', COUNT (DISTINCT CASE WHEN number_of_pairs= '5 pairs' THEN user_id END) AS '5 pairs’, COUNT (*) AS 'quiz', SUM (is_home_try_on) AS 'home_try_on', SUM (is_purchase) AS 'purchase', 1.0 * SUM (is_home_try_on) / COUNT (user_id) AS 'quiz to home try on', 1.0* SUM (is_purchase)/ SUM (is_home_try_on) AS 'home try on to purchase'
+FROM Funnels
+GROUP BY number_of_pairs
+ORDER BY number_of_pairs;
